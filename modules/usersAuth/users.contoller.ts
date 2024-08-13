@@ -11,14 +11,18 @@ export const SignUp = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
 
   try {
-    const existUser = await User.findOne({ email });
-    if (existUser) {
-      return res.status(400).json({ message: 'email already exist' });
-    }
-    const harshPassword = await bcrypt.hash(password, 10);
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    } else {
+      const existUser = await User.findOne({ email });
+      if (existUser) {
+        return res.status(400).json({ message: 'email already exist' });
+      }
+      const harshPassword = await bcrypt.hash(password, 10);
 
-    await User.create({ ...req.body, password: harshPassword });
-    return res.status(200).json({ message: 'successfully resgistered' });
+      await User.create({ ...req.body, password: harshPassword });
+      return res.status(200).json({ message: 'successfully resgistered' });
+    }
   } catch {
     return res.status(500).json({ message: 'can not signup' });
   }
