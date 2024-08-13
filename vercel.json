@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "MONGODB_URI": "@your_mongodb_uri",
+    "MONGODB_URI": "mongodb+srv://jazzygee36:VooMDA6Lg76STJAv@cluster0.4pmjj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
     "PORT": "5000"
   }
 }
