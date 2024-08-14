@@ -30,9 +30,9 @@ export const SignUp = async (req: Request, res: Response) => {
 export const ReadAllUsers = async (req: Request, res: Response) => {
   try {
     const allUsers = await User.find({});
-    res.status(200).send(allUsers);
+    return res.status(200).send(allUsers);
   } catch (error) {
-    res.status(500).send({ error: 'can not find all users' });
+    return res.status(500).send({ error: 'can not find all users' });
   }
 };
 
@@ -51,9 +51,9 @@ export const UpdateUser = async (req: Request, res: Response) => {
         .send({ error: 'User not found or no changes made.' });
     }
 
-    res.status(200).send({ message: 'User updated successfully.' });
+    return res.status(200).send({ message: 'User updated successfully.' });
   } catch (error) {
-    res
+    return res
       .status(500)
       .send({ error: 'An error occurred while updating the user.' });
   }
@@ -71,9 +71,9 @@ export const DeleteUser = async (req: Request, res: Response) => {
       return res.status(404).send({ error: 'User not found.' });
     }
 
-    res.status(200).send({ message: 'User deleted successfully.' });
+    return res.status(200).send({ message: 'User deleted successfully.' });
   } catch (error) {
-    res
+    return res
       .status(500)
       .send({ error: 'An error occurred while deleting the user.' });
   }
@@ -91,9 +91,9 @@ export const GetUserProfile = async (req: Request, res: Response) => {
       return res.status(404).send({ error: 'User not found.' });
     }
 
-    res.status(200).send(user);
+    return res.status(200).send(user);
   } catch (error) {
-    res
+    return res
       .status(500)
       .send({ error: 'An error occurred while retrieving the user profile.' });
   }
@@ -126,9 +126,11 @@ export const SendOTP = async (req: Request, res: Response) => {
     */
 
     // Respond with a success message
-    res.status(200).send({ message: 'OTP sent successfully.' });
+    return res.status(200).send({ message: 'OTP sent successfully.' });
   } catch (error) {
-    res.status(500).send({ error: 'An error occurred while sending the OTP.' });
+    return res
+      .status(500)
+      .send({ error: 'An error occurred while sending the OTP.' });
   }
 };
 
@@ -165,6 +167,6 @@ export const Login = async (req: Request, res: Response) => {
       }
     );
   } catch {
-    res.status(500).send('Server error');
+    return res.status(500).send('Server error');
   }
 };
