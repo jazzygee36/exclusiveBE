@@ -34,7 +34,13 @@ app.use(
   })
 );
 
-// Routes
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API');
+});
+
+// API routes
 app.use('/api', UsersRouter);
 
+// Export the app for serverless deployment
 export default app;
