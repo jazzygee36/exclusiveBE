@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import User from './users.model';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.SECRET as string;
 const salt = process.env.SALT as string;
