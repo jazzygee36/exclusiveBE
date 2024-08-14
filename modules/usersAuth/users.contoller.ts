@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import User from './users.model';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-const JWT_SECRET = process.env.SECRET as string;
-const salt = process.env.SALT as string;
+const JWT_SECRET = 'fjkdjorioowuuroor';
+const salt = 10;
 
 // import { Users } from './users.model';
 
@@ -18,7 +18,7 @@ export const SignUp = async (req: Request, res: Response) => {
       if (existUser) {
         return res.status(400).json({ message: 'email already exist' });
       }
-      const harshPassword = await bcrypt.hash(password, 10);
+      const harshPassword = await bcrypt.hash(password, salt);
 
       await User.create({ ...req.body, password: harshPassword });
       return res.status(200).json({ message: 'successfully resgistered' });
@@ -140,11 +140,12 @@ export const Login = async (req: Request, res: Response) => {
     // Check if the user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'meail' });
+      return res.status(400).json({ message: 'Email not found' });
     }
 
     // Compare the provided password with the hashed password in the database
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -163,10 +164,11 @@ export const Login = async (req: Request, res: Response) => {
       { expiresIn: '1h' }, // Token expiration time
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        return res.json({ token });
       }
     );
-  } catch {
+  } catch (err) {
+    console.log(err, 'error');
     return res.status(500).send('Server error');
   }
 };
