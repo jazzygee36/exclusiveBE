@@ -4,6 +4,7 @@ interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  id?: number;
 }
 
 interface IUserModel extends Model<IUser> {
@@ -11,8 +12,9 @@ interface IUserModel extends Model<IUser> {
 }
 
 const userSchema = new Schema<IUser>({
+  id: { type: Number },
   username: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 });
 

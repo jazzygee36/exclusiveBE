@@ -4,7 +4,8 @@ import {
   ReadAllUsers,
   UpdateUser,
   DeleteUser,
-  GetUserProfile,
+  verifyToken,
+  getUserById,
   SendOTP,
   Login,
 } from './users.contoller';
@@ -15,7 +16,7 @@ router.post('/login', Login);
 router.get('/allUsers', ReadAllUsers);
 router.patch('/update/:id', UpdateUser);
 router.delete('/delete/:id', DeleteUser);
-router.get('/user/:id', GetUserProfile);
+router.get('/profile', verifyToken, getUserById);
 router.post('/send-otp', SendOTP);
 
 export const UsersRouter = router;

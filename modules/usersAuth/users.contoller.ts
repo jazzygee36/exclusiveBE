@@ -1,8 +1,15 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import User from './users.model';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-const JWT_SECRET = 'fjkdjorioowuuroor';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
+interface AuthenticatedRequest extends Request {
+  userId?: string; // Use `string | undefined` to account for optional properties
+}
+const JWT_SECRET = process.env.JWT_SECRET as string;
+const SECRET_KEY = process.env.JWT_SECRET as string;
 const salt = 10;
 
 // import { Users } from './users.model';
@@ -78,27 +85,83 @@ export const DeleteUser = async (req: Request, res: Response) => {
       .send({ error: 'An error occurred while deleting the user.' });
   }
 };
-
-export const GetUserProfile = async (req: Request, res: Response) => {
+export const Login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
   try {
-    const { id } = req.params;
-
-    // Find the user by ID
-    const user = await User.findById(id);
-
-    // Check if the user was found
+    // Check if the user exists
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).send({ error: 'User not found.' });
+      return res.status(400).json({ message: 'Email not found' });
     }
 
-    return res.status(200).send(user);
-  } catch (error) {
-    return res
-      .status(500)
-      .send({ error: 'An error occurred while retrieving the user profile.' });
+    // Compare the provided password with the hashed password in the database
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Create a JWT payload
+    const payload = {
+      user: {
+        id: user._id,
+      },
+    };
+    console.log(user, 'user_id');
+
+    // Sign the JWT token
+    jwt.sign(
+      payload,
+      JWT_SECRET,
+      { expiresIn: '1h' }, // Token expiration time
+      (err, token) => {
+        if (err) throw err;
+        return res.json({ token });
+      }
+    );
+  } catch (err) {
+    console.log(err, 'error');
+    return res.status(500).send('Server error');
   }
 };
 
+export const verifyToken = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err || !decoded) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    req.userId = (decoded as any).user.id;
+    next();
+  });
+};
+
+export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: 'User ID not found in request' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
 export const SendOTP = async (req: Request, res: Response) => {
   try {
     const { phoneNumber } = req.body;
@@ -131,44 +194,5 @@ export const SendOTP = async (req: Request, res: Response) => {
     return res
       .status(500)
       .send({ error: 'An error occurred while sending the OTP.' });
-  }
-};
-
-export const Login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    // Check if the user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Email not found' });
-    }
-
-    // Compare the provided password with the hashed password in the database
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    // Create a JWT payload
-    const payload = {
-      user: {
-        id: user._id,
-      },
-    };
-
-    // Sign the JWT token
-    jwt.sign(
-      payload,
-      JWT_SECRET,
-      { expiresIn: '1h' }, // Token expiration time
-      (err, token) => {
-        if (err) throw err;
-        return res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.log(err, 'error');
-    return res.status(500).send('Server error');
   }
 };
